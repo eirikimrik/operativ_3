@@ -41,11 +41,12 @@ public class ClientHandler extends Thread {
                 if (!message.isEmpty()) {
                     Date dateBefore = new Date();
                     Long before = dateBefore.getTime();
-                    System.out.println("Received message: " + message);
+                    System.out.println("Client Port: " + socket.getPort() + ", " + " Received message: " + message);
                     response = handleMessage(message);
                     Date dateAfter = new Date();
                     Long after = dateAfter.getTime();
-                    System.out.println("Time to process: " + (after - before) + "ms");
+                    System.out.println(
+                            "Client Port: " + socket.getPort() + ", " + " Time to process: " + (after - before) + "ms");
                 }
 
             } while (!response.isEmpty());
