@@ -16,6 +16,7 @@ public class ClientHandler extends Thread {
     private final BufferedReader reader;
     private final PrintWriter writer;
     private final Server server;
+    private boolean process = false;
     private boolean runThread;
     private final Map<Integer, String> messageQueue;
     private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
@@ -34,32 +35,23 @@ public class ClientHandler extends Thread {
         System.out.println("Starting message processor");
         new Thread(() -> {
             while (true) {
-                if (messageQueue.size() > 0) {
-                    int lowestPriority = getLowestPriority();
-                    String message = messageQueue.get(lowestPriority);
-                    System.out.println("Priority queue: " + lowestPriority);
-                    System.out.println("Now computing " + message);
-                    server.handleMessage(this, message);
+                if (messageQueue.size() > 0 && !process) {
+                    process = true;
+                    int minValue = getMinPriority();
+                    if (minValue > -1) {
+                        String message = messageQueue.get(minValue);
+                        server.handleMessage(this, message);
+                        messageQueue.remove(minValue);
+                        process = false;
+                    }
+                } else {
+                    Thread.currentThread().interrupt();
                 }
-                
 
             }
         }).start();
     }
 
-    private int getLowestPriority() {
-        int lowestPriority = Integer.MAX_VALUE;
-
-        for (int i : messageQueue.keySet()) {
-            if (i < lowestPriority) {
-                lowestPriority = i;
-            }
-        }
-
-        System.out.println("Lowest priority: " + lowestPriority);
-
-        return lowestPriority;
-    }
 
     @Override
     public void run() {
@@ -84,11 +76,26 @@ public class ClientHandler extends Thread {
         } while (true);
     }
 
+
+    private int getMinPriority() {
+        int max = Integer.MAX_VALUE;
+        for (int i : messageQueue.keySet()) {
+            if (i < max) {
+                max = i;
+            }
+        }
+
+        if (messageQueue.isEmpty()) {
+            return -1;
+        } else {
+            return max;
+        }
+    }
+
     public synchronized String handleMessage(String message) {
         System.out.println(LocalDateTime.now().format(formatter) + " Computing: " + message);
         Map<String, Double> result = server.getServerLogic().getResult(message);
         String resultString = result.toString();
-        messageQueue.remove(getLowestPriority());
         send(resultString);
         return resultString;
     }
@@ -102,7 +109,6 @@ public class ClientHandler extends Thread {
             String decompiledMessage =
                     server.getServerLogic().decompileMessage(messageQueue, message);
 
-            
             System.out.println(LocalDateTime.now().format(formatter) + " Message "
                     + decompiledMessage + " added to queue");
             System.out.println(messageQueue);
