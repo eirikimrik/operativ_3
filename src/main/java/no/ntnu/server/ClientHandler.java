@@ -33,8 +33,10 @@ public class ClientHandler extends Thread {
     private void startMessageProcessor() {
         new Thread(() -> {
             while (true) {
-                String message = messageQueue.get(messageQueue.keySet().stream().min(Integer::compareTo).orElseThrow());
-                server.handleMessage(this, message);
+                if (messageQueue.entrySet().size() > 0) {
+                    String message = messageQueue.get(messageQueue.keySet().stream().min(Integer::compareTo).orElseThrow());
+                    server.handleMessage(this, message);
+                }
             }
         }).start();
     }
