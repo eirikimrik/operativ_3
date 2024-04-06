@@ -1,6 +1,7 @@
 package no.ntnu.server;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -47,8 +48,10 @@ public class Server {
         ServerSocket listeningSocket = null;
         try {
             System.out.println("Starting server on port " + PORT_NUMBER);
-            listeningSocket = new ServerSocket(PORT_NUMBER);
-        } catch (Exception e) {
+            listeningSocket = new ServerSocket();
+            // Bind the server socket to localhost
+            listeningSocket.bind(new InetSocketAddress("localhost", PORT_NUMBER));
+        } catch (IOException e) {
             e.printStackTrace();
         }
         return listeningSocket;

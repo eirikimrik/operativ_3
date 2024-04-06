@@ -9,6 +9,8 @@ import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class ClientHandler extends Thread {
 
@@ -18,6 +20,7 @@ public class ClientHandler extends Thread {
     private final Server server;
     private boolean runThread;
     private final BlockingQueue<String> messageQueue;
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
 
     public ClientHandler(Socket socket, Server server, boolean runThread) throws IOException {
         this.socket = socket;
@@ -33,7 +36,8 @@ public class ClientHandler extends Thread {
         new Thread(() -> {
             while (true) {
                 try {
-                    String message = messageQueue.take(); // This will block until a message is available
+                    String message = messageQueue.take();
+                    System.out.print(LocalDateTime.now().format(formatter) + " Computing: "+message); // This will block until a message is available
                     server.handleMessage(this, message);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
@@ -83,7 +87,8 @@ public class ClientHandler extends Thread {
             message = reader.readLine();
             System.out.println("Received message: " + message);  // Print the received message
             messageQueue.put(message); // Add the message to the queue
-            System.out.println("Message "+ message +" added to queue"); 
+        
+            System.out.println(LocalDateTime.now().format(formatter) + " Message " + message + " added to queue");
             System.out.println(messageQueue); 
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
