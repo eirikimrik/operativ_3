@@ -31,19 +31,33 @@ public class ClientHandler extends Thread {
     }
 
     private void startMessageProcessor() {
+        System.out.println("Starting message processor");
         new Thread(() -> {
             while (true) {
-                if (messageQueue.entrySet().size() > 0) {
-                    String message = messageQueue.get(messageQueue.keySet().stream().min(Integer::compareTo).orElseThrow());
-                    messageQueue.remove(messageQueue.keySet().stream().min(Integer::compareTo).orElseThrow());
+                if (messageQueue.size() > 0) {
+                    int lowestPriority = getLowestPriority();
+                    String message = messageQueue.get(lowestPriority);
+                    System.out.println("Priority queue: " + lowestPriority);
+                    System.out.println("Now computing " + message);
                     server.handleMessage(this, message);
                 }
+                
+
             }
         }).start();
     }
 
-    
+    private int getLowestPriority() {
+        int lowestPriority = Integer.MAX_VALUE;
 
+        for (int i : messageQueue.keySet()) {
+            if (i < lowestPriority) {
+                lowestPriority = i;
+            }
+        }
+
+        return lowestPriority;
+    }
 
     @Override
     public void run() {
@@ -72,20 +86,24 @@ public class ClientHandler extends Thread {
         System.out.println(LocalDateTime.now().format(formatter) + " Computing: " + message);
         Map<String, Double> result = server.getServerLogic().getResult(message);
         String resultString = result.toString();
-        send(resultString);  
+        messageQueue.remove(getLowestPriority());
+        send(resultString);
         return resultString;
     }
-    
+
 
     private String readClientMessage() {
         String message = "";
         try {
             message = reader.readLine();
-            System.out.println("Received message: " + message);  // Print the received message
-            server.getServerLogic().decompileMessage(messageQueue, message);
-        
-            System.out.println(LocalDateTime.now().format(formatter) + " Message " + message + " added to queue");
-            System.out.println(messageQueue); 
+            System.out.println("Received message: " + message); // Print the received message
+            String decompiledMessage =
+                    server.getServerLogic().decompileMessage(messageQueue, message);
+
+            
+            System.out.println(LocalDateTime.now().format(formatter) + " Message "
+                    + decompiledMessage + " added to queue");
+            System.out.println(messageQueue);
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -34,11 +34,12 @@ public class ServerLogic {
         return fibonacciRecursive(n - 1) + fibonacciRecursive(n - 2);
     }
 
-    public void decompileMessage(Map<Integer, String> map, String message) {
+    public String decompileMessage(Map<Integer, String> map, String message) {
         String[] command = message.split("P");
-        int priority = Integer.parseInt(command[1].split(" ")[0].substring(1));
+        int priority = Integer.parseInt(command[1].split(" ")[0]);
 
         map.put(priority, command[0].split(" ")[0]);
+        return command[0].split(" ")[0];
     }
 
     public Map<String, Double> getResult(String message) {
