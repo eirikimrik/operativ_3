@@ -37,7 +37,6 @@ public class ClientHandler extends Thread {
             while (true) {
                 try {
                     String message = messageQueue.take();
-                    System.out.print(LocalDateTime.now().format(formatter) + " Computing: "+message); // This will block until a message is available
                     server.handleMessage(this, message);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
@@ -74,6 +73,7 @@ public class ClientHandler extends Thread {
     }
 
     public synchronized String handleMessage(String message) {
+        System.out.println(LocalDateTime.now().format(formatter) + " Computing: "+message);
         Map<String, Double> result = server.getServerLogic().getResult(message);
         String resultString = result.toString();
         send(resultString);  
