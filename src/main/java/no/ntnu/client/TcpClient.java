@@ -33,16 +33,16 @@ public class TcpClient {
         if (connect()) {
             boolean running = true;
             while (running) {
-                System.out.println("Enter Command (e.g., P5 F45):");
+                System.out.println("Enter Command (e.g., F5 P45):");
                 Scanner scanner = new Scanner(System.in);
                 if (scanner.hasNextLine()) {
                     String input = scanner.nextLine().trim();
                     if (input.equals("exit")) {
                         running = false;
-                    } else if (input.matches("^P\\d+\\s+F\\d+$")) {
+                    } else if (input.matches("^F\\d+\\s+P\\d+$")) {
                         send(input);
                     } else {
-                        System.out.println("Invalid command format. Please enter a valid command (e.g., P5 F10).");
+                        System.out.println("Invalid command format. Please enter a valid command (e.g., F5 P10).");
                     }
                 }
             }
