@@ -35,11 +35,14 @@ public class TcpClient {
                 System.out.println("Enter Command:");
                 Scanner scanner = new Scanner(System.in);
                 if (scanner.hasNextLine()) {
-                    String message = scanner.nextLine();
+                    String message = scanner.nextLine().trim(); // Remove leading/trailing spaces
                     if (message.equals("exit")) {
                         running = false;
-                    } else {
+                    } else if (message.matches("^F\\d+$")) {
+                        // Valid command in the format F(number)
                         send(message);
+                    } else {
+                        System.out.println("Invalid command format. Please enter a valid command (e.g., F10).");
                     }
                 }
             }
