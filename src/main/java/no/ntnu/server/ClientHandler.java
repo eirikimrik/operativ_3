@@ -56,6 +56,8 @@ public class ClientHandler extends Thread {
             }
         }
 
+        System.out.println("Lowest priority: " + lowestPriority);
+
         return lowestPriority;
     }
 
