@@ -22,8 +22,8 @@ public class TcpClient {
             reader = new BufferedReader(new java.io.InputStreamReader(socket.getInputStream()));
             connected = true;
         } catch (IOException e) {
-            System.out.println("Error: no server found");;
-            //e.printStackTrace();
+            System.out.println("Error: no server found");
+            // e.printStackTrace();
         }
 
         return connected;
@@ -33,17 +33,16 @@ public class TcpClient {
         if (connect()) {
             boolean running = true;
             while (running) {
-                System.out.println("Enter Command:");
+                System.out.println("Enter Command (e.g., P5 F45):");
                 Scanner scanner = new Scanner(System.in);
                 if (scanner.hasNextLine()) {
-                    String message = scanner.nextLine().trim(); // Remove leading/trailing spaces
-                    if (message.equals("exit")) {
+                    String input = scanner.nextLine().trim();
+                    if (input.equals("exit")) {
                         running = false;
-                    } else if (message.matches("^F\\d+$")) {
-                        // Valid command in the format F(number)
-                        send(message);
+                    } else if (input.matches("^P\\d+\\s+F\\d+$")) {
+                        send(input);
                     } else {
-                        System.out.println("Invalid command format. Please enter a valid command (e.g., F10).");
+                        System.out.println("Invalid command format. Please enter a valid command (e.g., P5 F10).");
                     }
                 }
             }
