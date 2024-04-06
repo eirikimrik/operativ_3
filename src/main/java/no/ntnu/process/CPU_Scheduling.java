@@ -12,7 +12,7 @@ public class CPU_Scheduling {
 
         ArrayList<Process> processes = new ArrayList<>();
 
-        // Input for FCFS
+
         for (int i = 0; i < n; i++) {
             System.out.println("Enter details for Process " + (i + 1));
             System.out.print("Process ID: ");
@@ -25,13 +25,13 @@ public class CPU_Scheduling {
             processes.add(new Process(pid, arrivalTime, burstTime, 0));
         }
 
-        // Sort processes based on arrival time for FCFS
+
         Collections.sort(processes, Comparator.comparingInt(p -> p.arrivalTime));
 
-        // Calculate waiting and turnaround time for FCFS
+
         calculateFCFS(processes);
 
-        // Calculate average waiting and turnaround time for FCFS
+
         double avgWaitingTimeFCFS = calculateAverageWaitingTime(processes);
         double avgTurnaroundTimeFCFS = calculateAverageTurnaroundTime(processes);
 
@@ -39,7 +39,7 @@ public class CPU_Scheduling {
         System.out.println("Average Waiting Time: " + avgWaitingTimeFCFS);
         System.out.println("Average Turnaround Time: " + avgTurnaroundTimeFCFS);
 
-        // Input for Preemptive Priority Scheduling
+
         processes.clear();
         for (int i = 0; i < n; i++) {
             System.out.println("\nEnter details for Process " + (i + 1));
@@ -55,13 +55,13 @@ public class CPU_Scheduling {
             processes.add(new Process(pid, arrivalTime, burstTime, priority));
         }
 
-        // Sort processes based on arrival time for Preemptive Priority Scheduling
+
         Collections.sort(processes, Comparator.comparingInt(p -> p.arrivalTime));
 
-        // Calculate waiting and turnaround time for Preemptive Priority Scheduling
+
         calculatePreemptivePriority(processes);
 
-        // Calculate average waiting and turnaround time for Preemptive Priority Scheduling
+
         double avgWaitingTimePP = calculateAverageWaitingTime(processes);
         double avgTurnaroundTimePP = calculateAverageTurnaroundTime(processes);
 
