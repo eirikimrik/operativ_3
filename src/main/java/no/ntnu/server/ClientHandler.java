@@ -35,6 +35,7 @@ public class ClientHandler extends Thread {
             while (true) {
                 if (messageQueue.entrySet().size() > 0) {
                     String message = messageQueue.get(messageQueue.keySet().stream().min(Integer::compareTo).orElseThrow());
+                    messageQueue.remove(messageQueue.keySet().stream().min(Integer::compareTo).orElseThrow());
                     server.handleMessage(this, message);
                 }
             }
