@@ -5,6 +5,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Server {
 
@@ -14,11 +16,16 @@ public class Server {
     private final ServerLogic serverLogic;
     private boolean isRunning;
     private boolean runThread;
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     public Server(ServerLogic serverLogic, boolean runThread) {
         this.clients = new ArrayList<>();
         this.serverLogic = serverLogic;
         this.runThread = runThread;
+    }
+
+    public void handleMessage(ClientHandler clientHandler, String message) {
+        executorService.submit(() -> clientHandler.handleMessage(message));
     }
 
     public void start() {
