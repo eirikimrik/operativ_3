@@ -22,7 +22,8 @@ public class TcpClient {
             reader = new BufferedReader(new java.io.InputStreamReader(socket.getInputStream()));
             connected = true;
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Error: no server found");;
+            //e.printStackTrace();
         }
 
         return connected;
