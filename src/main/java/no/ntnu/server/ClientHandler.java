@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -19,8 +19,8 @@ public class ClientHandler extends Thread {
     private final PrintWriter writer;
     private final Server server;
     private boolean runThread;
-    private final BlockingQueue<String> messageQueue;
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+    private final Map<Integer, String> messageQueue;
+    private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
 
     public ClientHandler(Socket socket, Server server, boolean runThread) throws IOException {
         this.socket = socket;
@@ -28,20 +28,15 @@ public class ClientHandler extends Thread {
         reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         writer = new PrintWriter(socket.getOutputStream(), true);
         this.runThread = runThread;
-        this.messageQueue = new LinkedBlockingQueue<>();
+        this.messageQueue = new HashMap<>();
         startMessageProcessor();
     }
 
     private void startMessageProcessor() {
         new Thread(() -> {
             while (true) {
-                try {
-                    String message = messageQueue.take();
-                    server.handleMessage(this, message);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    break;
-                }
+                String message = messageQueue.get(messageQueue.keySet().stream().min(Integer::compareTo).orElseThrow());
+                server.handleMessage(this, message);
             }
         }).start();
     }
@@ -73,7 +68,7 @@ public class ClientHandler extends Thread {
     }
 
     public synchronized String handleMessage(String message) {
-        System.out.println(LocalDateTime.now().format(formatter) + " Computing: "+message);
+        System.out.println(LocalDateTime.now().format(formatter) + " Computing: " + message);
         Map<String, Double> result = server.getServerLogic().getResult(message);
         String resultString = result.toString();
         send(resultString);  
@@ -86,11 +81,11 @@ public class ClientHandler extends Thread {
         try {
             message = reader.readLine();
             System.out.println("Received message: " + message);  // Print the received message
-            messageQueue.put(message); // Add the message to the queue
+            server.getServerLogic().decompileMessage(messageQueue, message);
         
             System.out.println(LocalDateTime.now().format(formatter) + " Message " + message + " added to queue");
             System.out.println(messageQueue); 
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
         return message;
