@@ -5,7 +5,9 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -21,6 +23,8 @@ public class Server {
     private final ServerLogic serverLogic;
     private boolean isRunning;
     private boolean runThread;
+    private boolean process;
+    private Map<Integer, String> messageQueue;
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     /**
@@ -29,6 +33,8 @@ public class Server {
      * @param runThread A boolean indicating whether client handlers should run in separate threads.
      */
     public Server(ServerLogic serverLogic, boolean runThread) {
+        this.messageQueue = new HashMap<>();
+        this.process = false;
         this.clients = new ArrayList<>();
         this.serverLogic = serverLogic;
         this.runThread = runThread;
@@ -41,7 +47,9 @@ public class Server {
      * @param message       The message received from the client.
      */
     public void handleMessage(ClientHandler clientHandler, String message) {
-        executorService.submit(() -> clientHandler.handleMessage(message));
+        executorService.submit(() -> {
+            clientHandler.handleMessage(message);
+        });
     }
 
     /**
@@ -107,6 +115,18 @@ public class Server {
         for (ClientHandler client : clients) {
             client.send(response);
         }
+    }
+
+    public Map<Integer, String> getQueue() {
+        return this.messageQueue;
+    }
+
+    public void setProcess(boolean process) {
+        this.process = process;
+    }
+
+    public boolean getProcess() {
+        return this.process;
     }
 
     /**

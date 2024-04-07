@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.HashMap;
 import java.util.Map;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -20,9 +19,8 @@ public class ClientHandler extends Thread {
     private final BufferedReader reader;
     private final PrintWriter writer;
     private final Server server;
-    private boolean process = false;
     private boolean runThread;
-    private final Map<Integer, String> messageQueue;
+    private Map<Integer, String> messageQueue;
     private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
 
     /**
@@ -34,7 +32,7 @@ public class ClientHandler extends Thread {
         reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         writer = new PrintWriter(socket.getOutputStream(), true);
         this.runThread = runThread;
-        this.messageQueue = new HashMap<>();
+        this.messageQueue = this.server.getQueue();
         startMessageProcessor();
     }
 
@@ -42,15 +40,12 @@ public class ClientHandler extends Thread {
         System.out.println("Starting message processor");
         new Thread(() -> {
             while (true) {
-                if (messageQueue.size() > 0 && !process) {
-                    process = true;
+                messageQueue = this.server.getQueue();
+                if (messageQueue.size() > 0 && !server.getProcess()) {
+                    server.setProcess(true);
                     int minValue = getMinPriority();
-                    if (minValue > -1) {
-                        String message = messageQueue.get(minValue);
-                        server.handleMessage(this, message);
-                        messageQueue.remove(minValue);
-                        process = false;
-                    }
+                    String message = messageQueue.get(minValue);
+                    server.handleMessage(this, message);
                 } else {
                     Thread.currentThread().interrupt();
                 }
@@ -114,6 +109,9 @@ public class ClientHandler extends Thread {
         Map<String, Double> result = server.getServerLogic().getResult(message);
         String resultString = result.toString();
         send(resultString);
+        System.out.println("Removing message " + messageQueue.get(getMinPriority()));
+        messageQueue.remove(getMinPriority());
+        server.setProcess(false);
         return resultString;
     }
 
