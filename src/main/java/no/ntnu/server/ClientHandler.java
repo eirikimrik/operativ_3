@@ -38,9 +38,6 @@ public class ClientHandler extends Thread {
         startMessageProcessor();
     }
 
-    /**
-     * Starts the message processing thread.
-     */
     private void startMessageProcessor() {
         System.out.println("Starting message processor");
         new Thread(() -> {
@@ -62,10 +59,6 @@ public class ClientHandler extends Thread {
         }).start();
     }
 
-
-    /**
-     * Runs the client, with or without seperate thread.
-     */
     @Override
     public void run() {
         if (runThread) {
@@ -95,12 +88,6 @@ public class ClientHandler extends Thread {
         } while (true);
     }
 
-
-    /**
-     * Retrieves the minimum priority from the message queue.
-     *
-     * @return The minimum priority value.
-     */
     private int getMinPriority() {
         int max = Integer.MAX_VALUE;
         for (int i : messageQueue.keySet()) {
@@ -130,12 +117,6 @@ public class ClientHandler extends Thread {
         return resultString;
     }
 
-
-    /**
-     * Reads a message sent by the client and adds it to the message queue for processing.
-     *
-     * @return The message received from the client.
-     */
     private String readClientMessage() {
         String message = "";
         try {
