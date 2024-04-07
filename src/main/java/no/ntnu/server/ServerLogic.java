@@ -3,14 +3,24 @@ package no.ntnu.server;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Server logic.
+ */
 public class ServerLogic {
 
     private Map<String, Double> results;
 
+    /**
+     * Server logic.
+     */
     public ServerLogic() {
         this.results = new HashMap<>();
     }
 
+    /**
+     * Handles a message.
+     * @param message message.
+     */
     public void handleMessage(String message) {
         String[] messageParts = message.split(", ");
         for (String s : messageParts) {
@@ -34,6 +44,12 @@ public class ServerLogic {
         return fibonacciRecursive(n - 1) + fibonacciRecursive(n - 2);
     }
 
+    /**
+     * Returns the result of the process.
+     *
+     * @param message message.
+     * @return the result of the process.
+     */
     public Map<String, Double> getResult(String message) {
         handleMessage(message);
         Map<String, Double> result = new HashMap<>(this.results);

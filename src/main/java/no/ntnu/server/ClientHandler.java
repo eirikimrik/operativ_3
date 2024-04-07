@@ -5,13 +5,15 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+/**
+ * Handles a client.
+ */
 public class ClientHandler extends Thread {
 
     private final Socket socket;
@@ -22,6 +24,13 @@ public class ClientHandler extends Thread {
     private final BlockingQueue<String> messageQueue;
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
 
+    /**
+     * Handler for clients.
+     * @param socket Socket.
+     * @param server Server.
+     * @param runThread If you want to run it as a thread.
+     * @throws IOException Exception.
+     */
     public ClientHandler(Socket socket, Server server, boolean runThread) throws IOException {
         this.socket = socket;
         this.server = server;
@@ -58,6 +67,9 @@ public class ClientHandler extends Thread {
         }
     }
 
+    /**
+     * Run with thread.
+     */
     public void runThread() {
         new Thread(() -> {
             do {
@@ -66,12 +78,20 @@ public class ClientHandler extends Thread {
         }).start();
     }
 
+    /**
+     * Run without thread.
+     */
     public void runNoThread() {
         do {
             readClientMessage();
         } while (true);
     }
 
+    /**
+     * Handles messages.
+     * @param message message.
+     * @return the result of the message.
+     */
     public synchronized String handleMessage(String message) {
         System.out.println(LocalDateTime.now().format(formatter) + " Computing: "+message);
         Map<String, Double> result = server.getServerLogic().getResult(message);
@@ -96,10 +116,18 @@ public class ClientHandler extends Thread {
         return message;
     }
 
+    /**
+     * Send message to client.
+     * @param message Message.
+     */
     public void send(String message) {
         writer.println(message);
     }
 
+    /**
+     * Disconnect client.
+     * @throws IOException Exception.
+     */
     public void disconnect() throws IOException {
         this.socket.close();
         reader.close();

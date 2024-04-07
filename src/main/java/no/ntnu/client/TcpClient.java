@@ -8,11 +8,18 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Scanner;
 
+/**
+ * The client.
+ */
 public class TcpClient {
     private Socket socket;
     private PrintWriter writer;
     private BufferedReader reader;
 
+    /**
+     * Connect to server.
+     * @return If the connection were sucessful.
+     */
     public boolean connect() {
         boolean connected = false;
 
@@ -29,6 +36,10 @@ public class TcpClient {
         return connected;
     }
 
+    /**
+     * Runs the client.
+     * @throws IOException Exception.
+     */
     public void run() throws IOException {
         if (connect()) {
             boolean running = true;
@@ -48,26 +59,6 @@ public class TcpClient {
                 }
             }
         }
-    }
-
-    public void startListening() {
-        new Thread(() -> {
-            String message = "";
-            do {
-                try {
-                    if (reader != null) {
-                        message = reader.readLine();
-                        handleIncomingMessage(message);
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            } while (!message.isEmpty());
-        }).start();
-    }
-
-    private void handleIncomingMessage(String message) {
-        System.out.println("Received message: " + message);
     }
 
     public boolean send(String message) throws IOException {

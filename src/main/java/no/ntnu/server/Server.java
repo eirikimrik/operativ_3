@@ -9,6 +9,9 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+/**
+ * Server.
+ */
 public class Server {
 
     public static final int PORT_NUMBER = 8080;
@@ -19,16 +22,29 @@ public class Server {
     private boolean runThread;
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
+    /**
+     * Server.
+     * @param serverLogic The logic of the server.
+     * @param runThread If the server should run on threads.
+     */
     public Server(ServerLogic serverLogic, boolean runThread) {
         this.clients = new ArrayList<>();
         this.serverLogic = serverLogic;
         this.runThread = runThread;
     }
 
+    /**
+     * Handles incoming messages.
+     * @param clientHandler Client.
+     * @param message Message.
+     */
     public void handleMessage(ClientHandler clientHandler, String message) {
         executorService.submit(() -> clientHandler.handleMessage(message));
     }
 
+    /**
+     * Start the server.
+     */
     public void start() {
         ServerSocket socket = openListeningSocket();
         if (socket != null) {
@@ -69,17 +85,30 @@ public class Server {
         return client;
     }
 
+    /**
+     * Disconnect client.
+     * @param clientHandler Client to disconnect.
+     * @throws IOException Exception.
+     */
     public void clientDisconnected(ClientHandler clientHandler) throws IOException {
         clientHandler.disconnect();
         clients.remove(clientHandler);
     }
 
+    /**
+     * Sends message to all connected clients.
+     * @param response Response to send.
+     */
     public void sendResponseToAllClients(String response) {
         for (ClientHandler client : clients) {
             client.send(response);
         }
     }
 
+    /**
+     * Returns the server logic.
+     * @return the server logic.
+     */
     public ServerLogic getServerLogic() {
         return serverLogic;
     }
