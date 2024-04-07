@@ -8,11 +8,19 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Scanner;
 
+/**
+ * The TCP client class for connecting to a server and sending/receiving messages.
+ */
 public class TcpClient {
     private Socket socket;
     private PrintWriter writer;
     private BufferedReader reader;
 
+    /**
+     * Connects the client to the server.
+     *
+     * @return {@code true} if the connection is successful, {@code false} otherwise.
+     */
     public boolean connect() {
         boolean connected = false;
 
@@ -29,6 +37,11 @@ public class TcpClient {
         return connected;
     }
 
+    /**
+     * Runs the client, allowing the user to input commands and sending them to the server.
+     *
+     * @throws IOException if an I/O error occurs.
+     */
     public void run() throws IOException {
         if (connect()) {
             boolean running = true;
@@ -49,6 +62,9 @@ public class TcpClient {
         }
     }
 
+    /**
+     * Starts a separate thread to listen for incoming messages from the server.
+     */
     public void startListening() {
         new Thread(() -> {
             String message = "";
@@ -65,10 +81,18 @@ public class TcpClient {
         }).start();
     }
 
+   
     private void handleIncomingMessage(String message) {
         System.out.println("Received message: " + message);
     }
 
+    /**
+     * Sends a message to the server.
+     *
+     * @param message The message to send.
+     * @return {@code true} if the message is sent successfully, {@code false} otherwise.
+     * @throws IOException if an I/O error occurs.
+     */
     public boolean send(String message) throws IOException {
         boolean sent = false;
         System.out.println("Sending message: " + message);
@@ -78,6 +102,9 @@ public class TcpClient {
         return sent;
     }
 
+    /**
+     * Stops the client and closes the connection.
+     */
     public void stop() {
         try {
             socket.close();
