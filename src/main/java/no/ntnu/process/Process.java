@@ -1,7 +1,5 @@
 package no.ntnu.process;
 
-import java.util.*;
-
 class Process {
     int pid;
     int arrivalTime;
