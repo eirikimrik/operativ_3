@@ -5,14 +5,13 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.Date;
 import java.util.Map;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-/**
- * The ClientHandler class manages the communication between the server and a client.
- * It handles reading messages from the client, processing them, and sending responses back.
- */
 public class ClientHandler extends Thread {
 
     private final Socket socket;
@@ -20,39 +19,35 @@ public class ClientHandler extends Thread {
     private final PrintWriter writer;
     private final Server server;
     private boolean runThread;
-    private Map<Integer, String> messageQueue;
-    private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+    private final BlockingQueue<String> messageQueue;
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
 
-    /**
-     * Constructor.
-     */
     public ClientHandler(Socket socket, Server server, boolean runThread) throws IOException {
         this.socket = socket;
         this.server = server;
         reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         writer = new PrintWriter(socket.getOutputStream(), true);
         this.runThread = runThread;
-        this.messageQueue = this.server.getQueue();
+        this.messageQueue = new LinkedBlockingQueue<>();
         startMessageProcessor();
     }
 
     private void startMessageProcessor() {
-        System.out.println("Starting message processor");
         new Thread(() -> {
             while (true) {
-                messageQueue = this.server.getQueue();
-                if (messageQueue.size() > 0 && !server.getProcess()) {
-                    server.setProcess(true);
-                    int minValue = getMinPriority();
-                    String message = messageQueue.get(minValue);
+                try {
+                    String message = messageQueue.take();
                     server.handleMessage(this, message);
-                } else {
+                } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
+                    break;
                 }
-
             }
         }).start();
     }
+
+    
+
 
     @Override
     public void run() {
@@ -63,9 +58,6 @@ public class ClientHandler extends Thread {
         }
     }
 
-    /**
-     * Runs the client handler in a separate thread.
-     */
     public void runThread() {
         new Thread(() -> {
             do {
@@ -74,78 +66,40 @@ public class ClientHandler extends Thread {
         }).start();
     }
 
-    /**
-     * Runs the client handler without creating a separate thread.
-     */
     public void runNoThread() {
         do {
             readClientMessage();
         } while (true);
     }
 
-    private int getMinPriority() {
-        int max = Integer.MAX_VALUE;
-        for (int i : messageQueue.keySet()) {
-            if (i < max) {
-                max = i;
-            }
-        }
-
-        if (messageQueue.isEmpty()) {
-            return -1;
-        } else {
-            return max;
-        }
-    }
-
-    /**
-     * Handles a message received from the client by delegating the processing to the server.
-     *
-     * @param message The message received from the client.
-     * @return The result string obtained from processing the message.
-     */
     public synchronized String handleMessage(String message) {
-        System.out.println(LocalDateTime.now().format(formatter) + " Computing: " + message);
+        System.out.println(LocalDateTime.now().format(formatter) + " Computing: "+message);
         Map<String, Double> result = server.getServerLogic().getResult(message);
         String resultString = result.toString();
-        send(resultString);
-        System.out.println("Removing message " + messageQueue.get(getMinPriority()));
-        messageQueue.remove(getMinPriority());
-        server.setProcess(false);
+        send(resultString);  
         return resultString;
     }
+    
 
     private String readClientMessage() {
         String message = "";
         try {
             message = reader.readLine();
-            System.out.println("Received message: " + message); // Print the received message
-            String decompiledMessage =
-                    server.getServerLogic().decompileMessage(messageQueue, message);
-
-            System.out.println(LocalDateTime.now().format(formatter) + " Message "
-                    + decompiledMessage + " added to queue");
-            System.out.println(messageQueue);
-        } catch (IOException e) {
+            System.out.println("Received message: " + message);  // Print the received message
+            messageQueue.put(message); // Add the message to the queue
+        
+            System.out.println(LocalDateTime.now().format(formatter) + " Message " + message + " added to queue");
+            System.out.println(messageQueue); 
+        } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
         return message;
     }
 
-    /**
-     * Sends a message to the client.
-     *
-     * @param message The message to send.
-     */
     public void send(String message) {
         writer.println(message);
     }
 
-    /**
-     * Closes the socket and disconnects the client connection.
-     *
-     * @throws IOException If an I/O error occurs when closing the socket or streams.
-     */
     public void disconnect() throws IOException {
         this.socket.close();
         reader.close();

@@ -8,19 +8,11 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Scanner;
 
-/**
- * The TCP client class for connecting to a server and sending/receiving messages.
- */
 public class TcpClient {
     private Socket socket;
     private PrintWriter writer;
     private BufferedReader reader;
 
-    /**
-     * Connects the client to the server.
-     *
-     * @return {@code true} if the connection is successful, {@code false} otherwise.
-     */
     public boolean connect() {
         boolean connected = false;
 
@@ -30,41 +22,34 @@ public class TcpClient {
             reader = new BufferedReader(new java.io.InputStreamReader(socket.getInputStream()));
             connected = true;
         } catch (IOException e) {
-            System.out.println("Error: no server found");
-            // e.printStackTrace();
+            System.out.println("Error: no server found");;
+            //e.printStackTrace();
         }
 
         return connected;
     }
 
-    /**
-     * Runs the client, allowing the user to input commands and sending them to the server.
-     *
-     * @throws IOException if an I/O error occurs.
-     */
     public void run() throws IOException {
         if (connect()) {
             boolean running = true;
             while (running) {
-                System.out.println("Enter Command (e.g., F5 P45):");
+                System.out.println("Enter Command:");
                 Scanner scanner = new Scanner(System.in);
                 if (scanner.hasNextLine()) {
-                    String input = scanner.nextLine().trim();
-                    if (input.equals("exit")) {
+                    String message = scanner.nextLine().trim(); // Remove leading/trailing spaces
+                    if (message.equals("exit")) {
                         running = false;
-                    } else if (input.matches("^F\\d+\\s+P\\d+$")) {
-                        send(input);
+                    } else if (message.matches("^F\\d+$")) {
+                        // Valid command in the format F(number)
+                        send(message);
                     } else {
-                        System.out.println("Invalid command format. Please enter a valid command (e.g., F5 P10).");
+                        System.out.println("Invalid command format. Please enter a valid command (e.g., F10).");
                     }
                 }
             }
         }
     }
 
-    /**
-     * Starts a separate thread to listen for incoming messages from the server.
-     */
     public void startListening() {
         new Thread(() -> {
             String message = "";
@@ -81,18 +66,10 @@ public class TcpClient {
         }).start();
     }
 
-   
     private void handleIncomingMessage(String message) {
         System.out.println("Received message: " + message);
     }
 
-    /**
-     * Sends a message to the server.
-     *
-     * @param message The message to send.
-     * @return {@code true} if the message is sent successfully, {@code false} otherwise.
-     * @throws IOException if an I/O error occurs.
-     */
     public boolean send(String message) throws IOException {
         boolean sent = false;
         System.out.println("Sending message: " + message);
@@ -102,9 +79,6 @@ public class TcpClient {
         return sent;
     }
 
-    /**
-     * Stops the client and closes the connection.
-     */
     public void stop() {
         try {
             socket.close();
